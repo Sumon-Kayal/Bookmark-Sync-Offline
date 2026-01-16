@@ -205,13 +205,14 @@ Contributions are welcome! Here's how you can help:
 
 ## 📋 Roadmap
 
-- [ ] Search functionality in manager
-- [ ] Cloud sync integration
-- [ ] Tag system for bookmarks
+## 📋 Roadmap
+
 - [ ] Search functionality in manager
 - [ ] Cloud sync integration
 - [ ] Tag system for bookmarks
 - [ ] Keyboard shortcuts
+- [ ] Dark mode support
+- [ ] Bookmark statistics and analytics
 - [ ] Dark mode support
 - [ ] Bookmark statistics and analytics
 - [ ] Duplicate detection

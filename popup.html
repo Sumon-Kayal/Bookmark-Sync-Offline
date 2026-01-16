@@ -2,7 +2,6 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Bookmark Manager</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -13,14 +12,13 @@
     <div class="label">Staged bookmarks</div>
 
     <div class="actions">
-      <button id="pullBtn">⬇ Pull from Browser</button>
-      <button id="pushBtn">⬆ Push to Browser</button>
-      <button id="importBtn">📥 Import (JSON/HTML)</button>
-      <button id="exportJsonBtn">📤 Export JSON</button>
-      <button id="exportHtmlBtn">📤 Export HTML</button>
-      <input type="file" id="fileInput" accept=".json,.html" hidden />
+      <button id="pullBtn" class="blue">⬇ Pull from Browser</button>
+      <button id="pushBtn" class="purple">⬆ Push to Browser</button>
+      <button id="importBtn" class="green">📥 Import File (JSON/HTML)</button>
+      <button id="exportJsonBtn" class="orange">📤 Export JSON</button>
+      <button id="exportHtmlBtn" class="orange">📤 Export HTML</button>
     </div>
   </div>
-<script src="popup.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>

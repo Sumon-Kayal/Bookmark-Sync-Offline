@@ -258,7 +258,7 @@ Create `CHANGELOG.md`:
 ```markdown
 # Changelog
 
-## [2.0.0] - 2026-01-17
+## [2.0.0] - 2026-01-16
 
 ### 🔥 Critical Fixes
 - Fixed data persistence bug (changed from session to local storage)

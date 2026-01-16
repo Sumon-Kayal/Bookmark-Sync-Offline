@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark Manager (Two‑Way Sync)",
+  "version": "1.0.0",
+  "description": "Two‑way bookmark import/export with 24‑hour temporary staging.",
+  "permissions": ["bookmarks", "storage", "alarms"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

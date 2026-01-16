@@ -205,8 +205,9 @@ Contributions are welcome! Here's how you can help:
 
 ## 📋 Roadmap
 
-- [ ] Export bookmarks to JSON/HTML
-- [ ] Import bookmarks from file
+- [ ] Search functionality in manager
+- [ ] Cloud sync integration
+- [ ] Tag system for bookmarks
 - [ ] Search functionality in manager
 - [ ] Cloud sync integration
 - [ ] Tag system for bookmarks

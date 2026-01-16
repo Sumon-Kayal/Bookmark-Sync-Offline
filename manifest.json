@@ -1,14 +1,53 @@
 {
   "manifest_version": 3,
-  "name": "Bookmark Manager (Staging)",
-  "version": "1.1.0",
-  "description": "Two-way bookmark staging with 24-hour expiration.",
-  "permissions": ["bookmarks", "storage", "alarms"],
+  "name": "Bookmark Sync",
+  "version": "2.0.0",
+  "description": "Sync, import, export and manage your browser bookmarks with automatic backup",
+  "author": "Sumon Kayal",
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "alarms"
+  ],
+  
   "background": {
     "service_worker": "background.js"
   },
+  
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Bookmark Sync"
   },
-  "options_page": "manager.html"
+  
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+B",
+        "mac": "Command+Shift+B"
+      },
+      "description": "Open Bookmark Sync"
+    }
+  },
+  
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "bookmark-sync@sumonkayal.dev",
+      "strict_min_version": "109.0"
+    }
+  },
+  
+  "minimum_chrome_version": "88"
 }

@@ -92,8 +92,18 @@ async function pushToBrowser() {
        if (chrome.runtime.lastError) {
          return show('Error creating bookmark folder', 'error');
        }
-       toAdd.forEach(b => chrome.bookmarks.create({ parentId: folder.id, title: b.title, url: b.url }));
-       show(`Added ${toAdd.length} bookmarks`, 'success');
+       const promises = toAdd.map(b => new Promise((resolve, reject) => {
+         chrome.bookmarks.create({ parentId: folder.id, title: b.title, url: b.url }, () => {
+           if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+           else resolve();
+         });
+       }));
+       Promise.all(promises)
+         .then(() => show(`Added ${toAdd.length} bookmarks`, 'success'))
+         .catch(err => {
+           console.error('pushToBrowser:', err);
+           show('Some bookmarks failed to add', 'error');
+         });
      });
    });
  }

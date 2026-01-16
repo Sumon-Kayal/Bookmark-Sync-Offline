@@ -58,19 +58,23 @@ function show(msg, type='info') {
 
 // --- Actions ---
 
-function pullFromBrowser() {
-  chrome.bookmarks.getTree(async tree => {
-    const list = [];
-    function walk(n) {
-      if (n.url) list.push({ title: n.title, url: n.url, dateAdded: n.dateAdded || Date.now() });
-      if (n.children) n.children.forEach(walk);
-    }
-    walk(tree[0]);
-    await saveStored(list);
-    updateCount();
-    show(`Pulled ${list.length} bookmarks`, 'success');
-  });
-}
+ function pullFromBrowser() {
+   chrome.bookmarks.getTree(async tree => {
+     try {
+       const list = [];
+       function walk(n) {
+         if (n.url) list.push({ title: n.title, url: n.url, dateAdded: n.dateAdded || Date.now() });
+         if (n.children) n.children.forEach(walk);
+       }
+       walk(tree[0]);
+       await saveStored(list);
+       updateCount();
+       show(`Pulled ${list.length} bookmarks`, 'success');
+     } catch (err) {
+       show('Error pulling bookmarks', 'error');
+     }
+   });
+ }
 
 async function pushToBrowser() {
   const staged = await getStored();
@@ -84,12 +88,13 @@ async function pushToBrowser() {
     const toAdd = staged.filter(b => !existing.has(b.url));
     if (!toAdd.length) return show('Already in sync', 'success');
 
-    chrome.bookmarks.create({ title: 'Imported Bookmarks' }, folder => {
-      toAdd.forEach(b => chrome.bookmarks.create({ parentId: folder.id, title: b.title, url: b.url }));
-      show(`Added ${toAdd.length} bookmarks`, 'success');
-    });
-  });
-}
+     chrome.bookmarks.create({ title: 'Imported Bookmarks' }, folder => {
+       if (chrome.runtime.lastError) {
+         return show('Error creating bookmark folder', 'error');
+       }
+       toAdd.forEach(b => chrome.bookmarks.create({ parentId: folder.id, title: b.title, url: b.url }));
+       show(`Added ${toAdd.length} bookmarks`, 'success');
+     });
 
 async function importFile(e) {
   const f = e.target.files[0];
@@ -126,15 +131,19 @@ async function exportJSON() {
   download(JSON.stringify(data, null, 2), 'bookmarks.json', 'application/json');
 }
 
-async function exportHTML() {
-  const d = await getStored();
-  let h = `<!DOCTYPE NETSCAPE-Bookmark-file-1><TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>`;
-  d.forEach(b => {
-    h += `\n<DT><A HREF="${b.url}" ADD_DATE="${Math.floor(b.dateAdded/1000)}">${b.title}</A>`;
-  });
-  h += `\n</DL><p>`;
-  download(h, 'bookmarks.html', 'text/html');
-}
+function escapeHTML(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+ }
+
+ async function exportHTML() {
+   const d = await getStored();
+   let h = `<!DOCTYPE NETSCAPE-Bookmark-file-1><TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>`;
+   d.forEach(b => {
+   h += `\n<DT><A HREF="${escapeHTML(b.url)}" ADD_DATE="${Math.floor(b.dateAdded/1000)}">${escapeHTML(b.title)}</A>`;
+   });
+   h += `\n</DL><p>`;
+   download(h, 'bookmarks.html', 'text/html');
+ }
 
 function download(c, n, t) {
   const b = new Blob([c], { type: t });

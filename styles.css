@@ -1,18 +1,479 @@
-* { box-sizing: border-box; }
-body { width: 380px; font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; padding: 14px; margin: 0; }
-.container { background: `#fff`; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-h1 { text-align: center; font-size: 20px; margin-top: 0; }
-.count { text-align: center; font-size: 48px; font-weight: bold; color: #2563eb; line-height: 1; }
-.label { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
-.status { display: none; padding: 10px; margin-bottom: 15px; border-radius: 8px; text-align: center; font-size: 13px; }
-.status.show { display: block; }
-.status.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-.status.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-.actions { display: flex; flex-direction: column; gap: 10px; }
-button { padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; color: white; }
-button:hover { opacity: 0.9; }
-.blue { background: #2563eb; }
-.purple { background: #7c3aed; }
-.green { background: #10b981; }
-.orange { background: #f59e0b; }
-input[type="file"] { margin: 20px 0; width: 100%; }
+/**
+ * Bookmark Sync - Styles
+ * Cross-browser compatible, accessible, modern design
+ * CRITICAL FIX: Removed backticks from color values
+ */
+
+/* CSS Variables for consistent theming */
+:root {
+  --primary-color: #2563eb;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --purple-color: #7c3aed;
+  --info-color: #3b82f6;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e7eb;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --transition: all 0.2s ease;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --bg-tertiary: #374151;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-tertiary: #6b7280;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 400px;
+  min-height: 420px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 
+               'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: var(--bg-secondary);
+  padding: 16px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+.container {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* Heading */
+h1 {
+  text-align: center;
+  font-size: 22px;
+  margin: 0 0 20px 0;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Count display */
+.count {
+  text-align: center;
+  font-size: 56px;
+  font-weight: bold;
+  color: var(--primary-color);
+  line-height: 1;
+  margin: 12px 0;
+  transition: var(--transition);
+  font-variant-numeric: tabular-nums;
+}
+
+.count:hover {
+  transform: scale(1.05);
+}
+
+/* Label */
+.label {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Status messages */
+.status {
+  display: none;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--border-radius-sm);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.status.show {
+  display: block;
+}
+
+.status.success {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.status.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.status.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Actions container */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Buttons */
+button {
+  padding: 13px 18px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Loading state for buttons */
+button.loading::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Button color variants */
+.blue {
+  background: var(--primary-color);
+}
+
+.blue:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.purple {
+  background: var(--purple-color);
+}
+
+.purple:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.green {
+  background: var(--success-color);
+}
+
+.green:hover:not(:disabled) {
+  background: #059669;
+}
+
+.orange {
+  background: var(--warning-color);
+}
+
+.orange:hover:not(:disabled) {
+  background: #d97706;
+}
+
+/* File input styling */
+input[type="file"] {
+  display: none;
+}
+
+.file-input-wrapper {
+  position: relative;
+  margin: 20px 0;
+}
+
+.file-label {
+  display: block;
+  padding: 40px 20px;
+  border: 2px dashed var(--text-tertiary);
+  border-radius: var(--border-radius);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.file-label:hover {
+  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  color: var(--primary-color);
+}
+
+.file-input-wrapper:focus-within .file-label {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Manager page specific styles */
+body.manager-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 24px;
+}
+
+.manager-page .container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Instructions box */
+.instructions-box {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary-color);
+}
+
+.instructions-box h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.instructions-box ol {
+  margin: 0;
+  padding-left: 24px;
+  color: var(--text-secondary);
+}
+
+.instructions-box li {
+  margin-bottom: 8px;
+}
+
+/* Info box */
+.info-box {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius);
+}
+
+.info-box h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.info-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-box li {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+.info-box pre {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
+  overflow-x: auto;
+  font-size: 12px;
+}
+
+.info-box code {
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--text-primary);
+}
+
+/* Security notice */
+.security-notice {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid #fcd34d;
+  font-size: 13px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .security-notice {
+    background: #451a03;
+    color: #fcd34d;
+    border-color: #92400e;
+  }
+}
+
+.security-notice code {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Typography */
+p {
+  margin: 12px 0;
+  color: var(--text-secondary);
+}
+
+small {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button {
+    border: 2px solid currentColor;
+  }
+  
+  .status {
+    border-width: 2px;
+  }
+  
+  .file-label {
+    border-width: 3px;
+  }
+}
+
+/* Print styles (hide interactive elements) */
+@media print {
+  button,
+  input[type="file"],
+  .file-input-wrapper {
+    display: none;
+  }
+}
+
+/* Scrollbar styling (WebKit browsers) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-tertiary) var(--bg-secondary);
+}

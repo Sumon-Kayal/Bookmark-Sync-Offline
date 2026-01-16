@@ -1,17 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Import Bookmarks</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Bookmarks - Bookmark Sync</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="container" style="margin: 50px auto;">
-    <h1>Import Bookmarks</h1>
-    <p>Select a JSON or HTML file to stage bookmarks.</p>
-    <input type="file" id="fileInput" accept=".json,.html" />
-    <div id="status" class="status"></div>
-    <p><small>Once imported, you can close this tab and use the extension popup to push them.</small></p>
+<body class="manager-page">
+  <div class="container">
+    <h1>📥 Import Bookmarks</h1>
+    
+    <p>Select a JSON or HTML file to import bookmarks into the staging area.</p>
+    
+    <!-- File input with drag-drop styling -->
+    <div class="file-input-wrapper">
+      <input 
+        type="file" 
+        id="fileInput" 
+        accept=".json,.html,.htm"
+        aria-label="Choose bookmark file to import (JSON or HTML)"
+      />
+      <label for="fileInput" class="file-label">
+        📁 Choose File or Drag & Drop
+      </label>
+    </div>
+    
+    <!-- Status message -->
+    <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
+    
+    <!-- Instructions -->
+    <div class="instructions-box">
+      <h3>📝 How to Import Bookmarks:</h3>
+      <ol>
+        <li>Click "Choose File" or drag a file onto the area above</li>
+        <li>Select your bookmarks file (JSON or HTML format)</li>
+        <li>Wait for the import to complete</li>
+        <li>Close this tab and return to the extension popup</li>
+        <li>Click "Push to Browser" to add bookmarks to your browser</li>
+      </ol>
+    </div>
+    
+    <!-- Supported formats info -->
+    <div class="info-box">
+      <h4>✅ Supported Formats:</h4>
+      <ul>
+        <li>
+          <strong>JSON:</strong> Array of bookmark objects
+          <pre><code>[
+  {
+    "title": "Example Site",
+    "url": "https://example.com",
+    "dateAdded": 1234567890000
+  }
+]</code></pre>
+        </li>
+        <li>
+          <strong>HTML:</strong> Netscape bookmark format (standard browser export)
+          <br><small>Exported from Chrome, Firefox, Edge, Safari, etc.</small>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Security notice -->
+    <div class="security-notice">
+      <strong>🔒 Security Note:</strong> Only <code>http://</code> and <code>https://</code> URLs are imported. 
+      Potentially dangerous URLs (javascript:, data:, file:) are automatically filtered out.
+    </div>
   </div>
+  
   <script src="popup.js"></script>
 </body>
 </html>

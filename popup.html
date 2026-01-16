@@ -1,24 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmark Sync</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h1>📚 Bookmark Manager</h1>
-    <div id="status" class="status"></div>
-    <div class="count" id="count">0</div>
+    <h1>📚 Bookmark Sync</h1>
+    
+    <!-- Status message area -->
+    <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
+    
+    <!-- Bookmark count display -->
+    <div class="count" id="count" aria-label="Number of staged bookmarks">0</div>
     <div class="label">Staged bookmarks</div>
-
+    
+    <!-- Action buttons -->
     <div class="actions">
-      <button id="pullBtn" class="blue">⬇ Pull from Browser</button>
-      <button id="pushBtn" class="purple">⬆ Push to Browser</button>
-      <button id="importBtn" class="green">📥 Import File (JSON/HTML)</button>
-      <button id="exportJsonBtn" class="orange">📤 Export JSON</button>
-      <button id="exportHtmlBtn" class="orange">📤 Export HTML</button>
+      <button 
+        id="pullBtn" 
+        class="blue"
+        type="button"
+        aria-label="Pull bookmarks from browser to staging area"
+        title="Download all browser bookmarks to staging area">
+        ⬇️ Pull from Browser
+      </button>
+      
+      <button 
+        id="pushBtn" 
+        class="purple"
+        type="button"
+        aria-label="Push staged bookmarks to browser"
+        title="Upload staged bookmarks to browser (skips duplicates)">
+        ⬆️ Push to Browser
+      </button>
+      
+      <button 
+        id="importBtn" 
+        class="green"
+        type="button"
+        aria-label="Import bookmarks from file"
+        title="Open import page to load bookmarks from JSON or HTML file">
+        📥 Import File
+      </button>
+      
+      <button 
+        id="exportJsonBtn" 
+        class="orange"
+        type="button"
+        aria-label="Export staged bookmarks as JSON file"
+        title="Download staged bookmarks as JSON file">
+        📤 Export JSON
+      </button>
+      
+      <button 
+        id="exportHtmlBtn" 
+        class="orange"
+        type="button"
+        aria-label="Export staged bookmarks as HTML file"
+        title="Download staged bookmarks as HTML file (Netscape format)">
+        📄 Export HTML
+      </button>
     </div>
   </div>
+  
   <script src="popup.js"></script>
 </body>
 </html>

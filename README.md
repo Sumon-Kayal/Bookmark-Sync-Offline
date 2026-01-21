@@ -1,4 +1,4 @@
-# 🔖 Bookmark Sync Offline 
+# 🔖 BookmarkSync Offline 
 
 A lightweight browser extension that synchronizes your bookmarks to internal storage, providing a seamless backup and management solution for your favorite links.
 

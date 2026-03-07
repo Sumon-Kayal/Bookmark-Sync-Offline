@@ -21,20 +21,20 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Sumon-Kayal/Bookmark-Sync.git
-   cd Bookmark-Sync
+   git clone https://github.com/Sumon-Kayal/Bookmark-Sync-Offline.git
+   cd Bookmark-Sync-Offline
    ```
 
 2. **Load in Chrome/Edge**
    - Open `chrome://extensions/` (or `edge://extensions/`)
    - Enable "Developer mode" (toggle in top-right corner)
    - Click "Load unpacked"
-   - Select the `Bookmark-Sync` folder
+   - Select the `Bookmark-Sync-Offline` folder
 
 3. **Load in Firefox**
    - Open `about:debugging#/runtime/this-firefox`
    - Click "Load Temporary Add-on"
-   - Select any file from the `Bookmark-Sync` folder (e.g., `manifest.json`)
+   - Select any file from the `Bookmark-Sync-Offline` folder (e.g., `manifest.json`)
 
 ## 📖 Usage
 
@@ -74,7 +74,7 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
 ### Project Structure
 
 ```
-Bookmark-Sync/
+Bookmark-Sync-Offline/
 ├── manifest.json          # Extension manifest
 ├── background.js          # Background service worker
 ├── popup.html            # Extension popup interface
@@ -238,7 +238,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 If you encounter any issues or have questions:
 
-- Open an [Issue](https://github.com/Sumon-Kayal/Bookmark-Sync/issues)
+- Open an [Issue](https://github.com/Sumon-Kayal/Bookmark-Sync-Offline/issues)
 - Check existing issues for solutions
 - Star the repository if you find it useful!
 
@@ -246,7 +246,7 @@ If you encounter any issues or have questions:
 
 - [Chrome Web Store](#) (Coming soon)
 - [Firefox Add-ons](#) (Coming soon)
-- [Documentation](https://github.com/Sumon-Kayal/Bookmark-Sync/wiki) (Coming soon)
+- [Documentation](https://github.com/Sumon-Kayal/Bookmark-Sync-Offline/wiki) (Coming soon)
 
 ---
 

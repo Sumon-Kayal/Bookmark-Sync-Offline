@@ -257,6 +257,73 @@ button.loading::after {
   background: #d97706;
 }
 
+.red {
+  background: var(--error-color);
+}
+
+.red:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.grey {
+  background: var(--text-secondary);
+}
+
+.grey:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+/* Clear staging area confirmation dialog */
+.clear-confirm {
+  margin-top: 16px;
+  padding: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--border-radius-sm);
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .clear-confirm {
+    background: #450a0a;
+    border-color: #991b1b;
+  }
+}
+
+.clear-confirm p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.clear-confirm-count {
+  color: var(--text-secondary);
+  font-size: 12px !important;
+}
+
+.clear-confirm-safe {
+  color: #065f46;
+  font-size: 12px !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .clear-confirm-safe {
+    color: #6ee7b7;
+  }
+}
+
+.clear-confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.clear-confirm-actions button {
+  padding: 8px 20px;
+  font-size: 13px;
+}
+
 /* File input styling */
 input[type="file"] {
   display: none;

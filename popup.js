@@ -403,8 +403,11 @@ async function findOrCreateFolder(title) {
 async function handleImportFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-  await handleImportFileData(file);
-}
+  try {
+    await handleImportFileData(file);
+  } finally {
+    event.target.value = '';
+  }
 
 /**
  * Core import logic — shared by file input and drag-and-drop

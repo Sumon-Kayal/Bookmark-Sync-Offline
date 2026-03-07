@@ -403,16 +403,21 @@ async function findOrCreateFolder(title) {
 async function handleImportFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-  await handleImportFileData(file);
-}
+  try {
+    await handleImportFileData(file);
+  } finally {
+    event.target.value = '';
+  }
 
 /**
  * Core import logic — shared by file input and drag-and-drop
  */
 async function handleImportFileData(file) {
-  
+  if (isOperationInProgress) return;
+
+  setOperationState(true);
   showStatus('Importing file...', 'info');
-  
+
   try {
     const content = await readFileAsText(file);
     let bookmarks;
@@ -459,6 +464,8 @@ async function handleImportFileData(file) {
   } catch (error) {
     console.error('[Popup] Import error:', error);
     showStatus(`Import failed: ${error.message}`, 'error');
+  } finally {
+    setOperationState(false);
   }
 }
 

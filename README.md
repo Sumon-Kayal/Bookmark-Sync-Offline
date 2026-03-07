@@ -42,13 +42,13 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
 
 1. **Initial Sync**
    - Click the extension icon in your browser toolbar
-   - Click "Sync Now" to perform your first synchronization
-   - Your bookmarks will be saved to internal storage
+   - Click **"Pull from Browser"** to save all your bookmarks to the staging area
+   - The count display will update to show how many bookmarks were staged
 
-2. **View Bookmarks**
-   - Click "Open Manager" to view all synced bookmarks
-   - Browse through folders and individual bookmarks
-   - Use the manager interface to organize your links
+2. **Import Bookmarks**
+- -   - Click **"Import File"** to open the import page and load bookmarks from a JSON or HTML file
++   - Click **"Open Manager"** to open the bookmark manager, then use the file picker to load bookmarks from a JSON or HTML file
+   - Once imported, click **"Push to Browser"** to add them to your browser
 
 3. **Automatic Sync**
    - The extension automatically syncs when you:
@@ -114,7 +114,7 @@ Bookmark-Sync/
 
 4. **Debug**
    - Right-click extension icon → "Inspect popup" (for popup debugging)
-   - Go to `chrome://extensions/` → "Inspect views: background page" (for background script)
+   - Go to `chrome://extensions/` → "Inspect views: service worker" (for background script)
    - Check browser console for errors
 
 ## 🧪 Testing

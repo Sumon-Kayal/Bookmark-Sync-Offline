@@ -26,7 +26,6 @@ This guide will help you set up the development environment, understand the proj
 2. **Code Editor** (Choose one)
    - VS Code (recommended) - [Download](https://code.visualstudio.com/)
    - Sublime Text
-   - Atom
    - WebStorm
 
 3. **Git**
@@ -72,6 +71,7 @@ You should see:
 - `popup.js`
 - `manager.html`
 - `styles.css`
+- `icons/` (containing icon16.png, icon32.png, icon48.png, icon128.png)
 - `LICENSE`
 - `README.md`
 - `.gitignore`
@@ -79,11 +79,8 @@ You should see:
 ### 3. Create Missing Directories (if needed)
 
 ```bash
-# Create assets directory for icons
-mkdir -p assets/icons
-
-# Create docs directory for documentation
-mkdir docs
+# Create icons directory
+mkdir -p icons
 ```
 
 ## Development Environment
@@ -200,6 +197,7 @@ Bookmark-Sync/
 ├── assets/
 │   ├── icons/
 │   │   ├── icon16.png
+│   │   ├── icon32.png
 │   │   ├── icon48.png
 │   │   └── icon128.png
 │   └── images/
@@ -260,9 +258,10 @@ Update `manifest.json`:
 
 ```json
 "icons": {
-  "16": "assets/icons/icon16.png",
-  "48": "assets/icons/icon48.png",
-  "128": "assets/icons/icon128.png"
+  "16": "icons/icon16.png",
+  "32": "icons/icon32.png",
+  "48": "icons/icon48.png",
+  "128": "icons/icon128.png"
 }
 ```
 

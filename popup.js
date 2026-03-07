@@ -408,6 +408,7 @@ async function handleImportFile(event) {
   } finally {
     event.target.value = '';
   }
+}
 
 /**
  * Core import logic — shared by file input and drag-and-drop

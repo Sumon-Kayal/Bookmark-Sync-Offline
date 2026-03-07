@@ -251,6 +251,7 @@ Key sections to understand:
 
 Create or download icons in these sizes:
 - 16x16 (toolbar icon)
+- 32x32 (browser action icon)
 - 48x48 (extension management page)
 - 128x128 (Chrome Web Store)
 

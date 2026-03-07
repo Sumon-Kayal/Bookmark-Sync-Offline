@@ -46,8 +46,7 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
    - The count display will update to show how many bookmarks were staged
 
 2. **Import Bookmarks**
-- -   - Click **"Import File"** to open the import page and load bookmarks from a JSON or HTML file
-+   - Click **"Open Manager"** to open the bookmark manager, then use the file picker to load bookmarks from a JSON or HTML file
+   - Click **"Open Manager"** to open the bookmark manager, then use the file picker to load bookmarks from a JSON or HTML file
    - Once imported, click **"Push to Browser"** to add them to your browser
 
 3. **Automatic Sync**

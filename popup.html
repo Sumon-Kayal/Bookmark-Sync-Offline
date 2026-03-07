@@ -63,6 +63,26 @@
         title="Download staged bookmarks as HTML file (Netscape format)">
         📄 Export HTML
       </button>
+
+      <button 
+        id="clearBtn" 
+        class="red"
+        type="button"
+        aria-label="Clear the staging area (does not affect browser bookmarks)"
+        title="Wipe all staged bookmarks from extension storage only — browser bookmarks are not affected">
+        🗑️ Clear Staging Area
+      </button>
+    </div>
+
+    <!-- Confirm wipe dialog (hidden by default) -->
+    <div id="clearConfirm" class="clear-confirm" role="alertdialog" aria-modal="true" aria-labelledby="clearConfirmTitle" hidden>
+      <p id="clearConfirmTitle"><strong>⚠️ Clear staging area?</strong></p>
+      <p id="clearConfirmCount" class="clear-confirm-count"></p>
+      <p class="clear-confirm-safe">Your actual browser bookmarks will <strong>not</strong> be affected.</p>
+      <div class="clear-confirm-actions">
+        <button id="clearCancelBtn" class="grey" type="button">Cancel</button>
+        <button id="clearConfirmBtn" class="red" type="button">Yes, clear it</button>
+      </div>
     </div>
   </div>
   

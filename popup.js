@@ -29,6 +29,11 @@ const pushBtn = document.getElementById('pushBtn');
 const importBtn = document.getElementById('importBtn');
 const exportJsonBtn = document.getElementById('exportJsonBtn');
 const exportHtmlBtn = document.getElementById('exportHtmlBtn');
+const clearBtn = document.getElementById('clearBtn');
+const clearConfirm = document.getElementById('clearConfirm');
+const clearConfirmBtn = document.getElementById('clearConfirmBtn');
+const clearCancelBtn = document.getElementById('clearCancelBtn');
+const clearConfirmCount = document.getElementById('clearConfirmCount');
 
 // State
 let isOperationInProgress = false;
@@ -61,6 +66,9 @@ function setupEventListeners() {
   if (pushBtn) pushBtn.addEventListener('click', handlePush);
   if (exportJsonBtn) exportJsonBtn.addEventListener('click', handleExportJson);
   if (exportHtmlBtn) exportHtmlBtn.addEventListener('click', handleExportHtml);
+  if (clearBtn) clearBtn.addEventListener('click', handleClearRequest);
+  if (clearCancelBtn) clearCancelBtn.addEventListener('click', dismissClearConfirm);
+  if (clearConfirmBtn) clearConfirmBtn.addEventListener('click', handleClearConfirmed);
   
   // Import button opens manager in new tab
   if (importBtn) {
@@ -127,7 +135,7 @@ function handleBackgroundMessage(message) {
 function setOperationState(inProgress) {
   isOperationInProgress = inProgress;
   
-  const buttons = [pullBtn, pushBtn, exportJsonBtn, exportHtmlBtn, importBtn];
+  const buttons = [pullBtn, pushBtn, exportJsonBtn, exportHtmlBtn, importBtn, clearBtn];
   buttons.forEach(btn => {
     if (btn) {
       btn.disabled = inProgress;
@@ -636,6 +644,64 @@ function downloadFile(content, filename, mimeType) {
       try { document.body.removeChild(link); } catch (e) { /* already removed */ }
       URL.revokeObjectURL(url);
     }, 100);
+  }
+}
+
+/**
+ * Step 1: User clicks "Clear Staging Area" — show confirmation dialog
+ */
+async function handleClearRequest() {
+  if (isOperationInProgress) return;
+
+  try {
+    const data = await getStored();
+    const count = data.length;
+
+    if (count === 0) {
+      showStatus('Staging area is already empty', 'info');
+      return;
+    }
+
+    // Show count in the confirm dialog so user knows exactly what they're wiping
+    if (clearConfirmCount) {
+      clearConfirmCount.textContent =
+        `This will remove ${count} staged bookmark${count !== 1 ? 's' : ''} from the extension.`;
+    }
+
+    if (clearConfirm) clearConfirm.hidden = false;
+    if (clearCancelBtn) clearCancelBtn.focus();
+  } catch (error) {
+    console.error('[Popup] Error reading count for clear dialog:', error);
+    showStatus('Could not read staging area', 'error');
+  }
+}
+
+/**
+ * Step 2a: User cancels — hide dialog
+ */
+function dismissClearConfirm() {
+  if (clearConfirm) clearConfirm.hidden = true;
+}
+
+/**
+ * Step 2b: User confirms — wipe ONLY extension storage, never browser bookmarks
+ */
+async function handleClearConfirmed() {
+  dismissClearConfirm();
+
+  if (isOperationInProgress) return;
+  setOperationState(true);
+
+  try {
+    // Remove only the extension's own storage keys — browser bookmarks are untouched
+    await browserAPI.storage.local.remove([STORAGE_KEY, METADATA_KEY]);
+    await updateCount();
+    showStatus('✓ Staging area cleared. Browser bookmarks are untouched.', 'success');
+  } catch (error) {
+    console.error('[Popup] Error clearing staging area:', error);
+    showStatus(`Failed to clear: ${error.message}`, 'error');
+  } finally {
+    setOperationState(false);
   }
 }
 

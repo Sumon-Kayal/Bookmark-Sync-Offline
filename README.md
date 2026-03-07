@@ -6,6 +6,10 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
 ![Version](https://img.shields.io/badge/version-3.0.0-green.svg)
 ![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)
 
+## 📱 Screenshot
+
+<img src="https://raw.githubusercontent.com/Sumon-Kayal/Bookmark-Sync-Offline/87429c477d9412c3df9a239ba2fd354190d327be/Screenshot_2026-03-07-16-11-27-843_org.cromite.cromite.jpg" width="320" alt="Bookmark Sync popup running on Android in Cromite, showing staged bookmarks with Pull from Browser, Push to Browser, Import File, Export JSON, Export HTML and Clear Staging Area buttons">
+
 ## ✨ Features
 
 - 📥 **Automatic Sync** - Seamlessly sync bookmarks from your browser to internal storage

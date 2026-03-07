@@ -13,8 +13,10 @@
 const STORAGE_KEY = 'bookmarks_data';
 const METADATA_KEY = 'sync_metadata';
 
-// Get browser API (works on both Chrome and Firefox)
-const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+// MV3-compliant API namespace.
+// Both Chrome and Firefox MV3 expose the `chrome` namespace.
+// Firefox also exposes `browser` (Promise-based), but `chrome` works on both.
+const browserAPI = globalThis.browser ?? globalThis.chrome;
 
 // UI Elements
 const countEl = document.getElementById('count');
@@ -63,13 +65,41 @@ function setupEventListeners() {
   // Import button opens manager in new tab
   if (importBtn) {
     importBtn.addEventListener('click', () => {
-      browserAPI.tabs.create({ url: 'manager.html' });
+      browserAPI.tabs.create({ url: browserAPI.runtime.getURL('manager.html') });
     });
   }
   
   // File input for manager page
   if (fileInput) {
     fileInput.addEventListener('change', handleImportFile);
+  }
+  
+  // Drag-and-drop for manager page
+  const dropZone = document.getElementById('dropZone');
+  if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('drag-over');
+    });
+    
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+    });
+    
+    dropZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+      
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      
+      // Reuse the same import handler by simulating a file event
+      await handleImportFileData(file);
+    });
   }
 }
 
@@ -155,7 +185,10 @@ async function saveStored(data) {
 }
 
 /**
- * Update bookmark count display
+ * Refreshes the UI element that displays the number of stored bookmarks.
+ *
+ * Fetches stored bookmarks and updates `countEl.textContent` with the current count.
+ * If an error occurs while retrieving storage, sets `countEl.textContent` to `"?"`.
  */
 async function updateCount() {
   try {
@@ -169,26 +202,43 @@ async function updateCount() {
   }
 }
 
+// Timer handle for auto-hiding status messages
+let statusTimeout = null;
+
 /**
- * Show status message
+ * Display a transient status message in the popup UI.
+ *
+ * Cancels any existing hide timer, updates the status text and visual type,
+ * then auto-hides the message after 4 seconds.
+ * @param {string} message - Text to display in the status area.
+ * @param {'info'|'success'|'error'} [type='info'] - Visual style to apply to the status.
  */
 function showStatus(message, type = 'info') {
   if (!statusEl) {
-    console.log('[Status]', message);
     return;
+  }
+  
+  // Clear any existing hide-timer so it doesn't dismiss the new message early
+  if (statusTimeout) {
+    clearTimeout(statusTimeout);
+    statusTimeout = null;
   }
   
   statusEl.textContent = message;
   statusEl.className = `status show ${type}`;
   
   // Auto-hide after 4 seconds
-  setTimeout(() => {
+  statusTimeout = setTimeout(() => {
     statusEl.classList.remove('show');
+    statusTimeout = null;
   }, 4000);
 }
 
 /**
- * IMPROVED: Pull bookmarks from browser with full error handling
+ * Pulls bookmarks from the browser and stores them in local storage, updating the displayed count.
+ *
+ * Extracts entries from the browser's bookmark tree, validates and skips invalid URLs,
+ * deduplicates bookmarks by URL before saving, and updates the UI with a success or error status.
  */
 async function handlePull() {
   if (isOperationInProgress) return;
@@ -202,6 +252,10 @@ async function handlePull() {
     
     const bookmarks = [];
     
+    /**
+     * Recursively traverses a bookmark tree node and appends validated bookmark objects to the surrounding `bookmarks` array.
+     * @param {Object} node - A bookmark tree node; expected properties: `url` (string), `title` (string), `dateAdded` (number) and `children` (Array of nodes). If `url` is present and valid, a bookmark object with `title`, `url`, and `dateAdded` is added to the shared `bookmarks` array. Invalid or missing URLs are skipped. When `dateAdded` is missing, the current timestamp is used.
+     */
     function walkTree(node) {
       if (node.url) {
         // SECURITY FIX: Validate URL before adding
@@ -209,7 +263,8 @@ async function handlePull() {
           bookmarks.push({
             title: node.title || '(No title)',
             url: node.url,
-            dateAdded: node.dateAdded || Date.now()
+            // Use != null so dateAdded: 0 is preserved correctly
+            dateAdded: node.dateAdded != null ? node.dateAdded : Date.now()
           });
         } else {
           console.warn('[Popup] Skipping invalid URL:', node.url);
@@ -223,11 +278,14 @@ async function handlePull() {
     
     walkTree(tree[0]);
     
-    // Save to storage
-    await saveStored(bookmarks);
+    // Save to storage — returns deduped array
+    const saved = await saveStored(bookmarks);
     await updateCount();
     
-    showStatus(`✓ Successfully pulled ${bookmarks.length} bookmarks`, 'success');
+    const skippedDups = bookmarks.length - saved.length;
+    let msg = `✓ Successfully pulled ${saved.length} bookmarks`;
+    if (skippedDups > 0) msg += ` (${skippedDups} duplicate${skippedDups !== 1 ? 's' : ''} removed)`;
+    showStatus(msg, 'success');
     
   } catch (error) {
     console.error('[Popup] Error pulling bookmarks:', error);
@@ -238,7 +296,9 @@ async function handlePull() {
 }
 
 /**
- * IMPROVED: Push bookmarks to browser with better folder handling
+ * Push local stored bookmarks into the browser's bookmark tree.
+ *
+ * Finds or creates an "Imported Bookmarks" folder, skips bookmarks whose URLs already exist in the browser, adds the remaining bookmarks individually, and updates the UI with a success or error summary. The function manages operation state and displays status messages for progress and failures.
  */
 async function handlePush() {
   if (isOperationInProgress) return;
@@ -251,6 +311,7 @@ async function handlePush() {
     
     if (!staged.length) {
       showStatus('No bookmarks to push', 'error');
+      setOperationState(false);
       return;
     }
     
@@ -270,6 +331,7 @@ async function handlePush() {
     
     if (!toAdd.length) {
       showStatus('✓ All bookmarks already exist in browser', 'success');
+      setOperationState(false);
       return;
     }
     
@@ -308,51 +370,40 @@ async function handlePush() {
 }
 
 /**
- * IMPROVED: Find or create bookmark folder (prevents duplicates)
+ * Finds a bookmarks folder with the given title under the browser's bookmarks bar and creates it if none exists.
+ * @param {string} title - The folder title to locate or create.
+ * @returns {Promise<Object>} The bookmark folder node that was found or created.
  */
 async function findOrCreateFolder(title) {
   try {
     const tree = await browserAPI.bookmarks.getTree();
-    let foundFolder = null;
-    
-    function findFolder(node) {
-      if (!node.url && node.title === title) {
-        foundFolder = node;
-        return true;
-      }
-      if (node.children) {
-        return node.children.some(findFolder);
-      }
-      return false;
-    }
-    
-    findFolder(tree[0]);
-    
-    if (foundFolder) {
-      console.log('[Popup] Using existing folder:', title);
-      return foundFolder;
-    }
-    
-    // Create new folder
-    // Try to get bookmarks bar ID (different on Chrome vs Firefox)
-    let parentId = '1'; // Default for Chrome
-    
-    // For Firefox, we need to find the toolbar folder
+
+    // Find a safe parent bar: Chrome id "1", Firefox "toolbar_____", or title match
+    let parentBar = null;
     if (tree[0].children) {
-      const toolbar = tree[0].children.find(n => n.title === 'toolbar' || n.id === 'toolbar_____');
-      if (toolbar) {
-        parentId = toolbar.id;
-      }
+      parentBar = tree[0].children.find(n =>
+        n.id === '1' || n.id === 'toolbar_____' ||
+        /bookmarks\.bar|toolbar/i.test(n.title)
+      );
     }
-    
-    console.log('[Popup] Creating new folder:', title);
+    if (!parentBar) parentBar = tree[0]; // fallback to root
+
+    // Only search direct children of the bar — avoids wrong deep matches
+    const existingFolder = (parentBar.children || []).find(
+      n => !n.url && n.title === title
+    );
+
+    if (existingFolder) {
+      return existingFolder;
+    }
+
     const folder = await browserAPI.bookmarks.create({
-      parentId: parentId,
+      parentId: parentBar.id,
       title: title
     });
-    
+
     return folder;
-    
+
   } catch (error) {
     console.error('[Popup] Error finding/creating folder:', error);
     throw error;
@@ -360,11 +411,27 @@ async function findOrCreateFolder(title) {
 }
 
 /**
- * Handle file import with validation
+ * Process a file selected via an <input type="file"> and import it if present.
+ * @param {Event} event - Change event from a file input; the first selected File (if any) will be read and imported.
  */
 async function handleImportFile(event) {
   const file = event.target.files[0];
   if (!file) return;
+  await handleImportFileData(file);
+}
+
+/**
+ * Import bookmarks from a user-provided file and persist valid entries to local storage.
+ *
+ * Accepts a File (from an <input> or drag-and-drop), supports JSON arrays of bookmark objects
+ * or Netscape-format HTML bookmark exports, validates each entry's `title` and `url` (only
+ * http/https are allowed), saves the valid bookmarks (deduplicated) to storage and updates
+ * the stored count. Displays success or error status messages; invalid entries are skipped
+ * and reported in the success message when present.
+ *
+ * @param {File} file - The file to import; must have a .json, .html, or .htm extension.
+ */
+async function handleImportFileData(file) {
   
   showStatus('Importing file...', 'info');
   
@@ -372,14 +439,15 @@ async function handleImportFile(event) {
     const content = await readFileAsText(file);
     let bookmarks;
     
-    if (file.name.endsWith('.json')) {
+    const nameLower = file.name.toLowerCase();
+    if (nameLower.endsWith('.json')) {
       bookmarks = JSON.parse(content);
       
       // Validate JSON structure
       if (!Array.isArray(bookmarks)) {
         throw new Error('Invalid JSON format: expected array of bookmarks');
       }
-    } else if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+    } else if (nameLower.endsWith('.html') || nameLower.endsWith('.htm')) {
       bookmarks = parseHtmlBookmarks(content);
     } else {
       throw new Error('Unsupported file type. Please use .json or .html files');
@@ -429,7 +497,13 @@ function readFileAsText(file) {
 }
 
 /**
- * SECURITY FIX: Parse HTML bookmarks with URL validation
+ * Parse a Netscape-format HTML bookmarks export and extract valid bookmark entries.
+ * @param {string} html - Raw HTML content of a bookmarks export (e.g., exported from a browser).
+ * @returns {Array<{title: string, url: string, dateAdded: number}>} An array of bookmark objects. Each object contains:
+ *  - `title`: bookmark title (uses "(No title)" when empty),
+ *  - `url`: an HTTP/HTTPS URL,
+ *  - `dateAdded`: timestamp in milliseconds since the epoch (uses `ADD_DATE` attribute when present, converted from seconds; otherwise the current time).
+ * Only entries with valid `http`/`https` URLs are included; invalid or non-HTTP(S) links are skipped.
  */
 function parseHtmlBookmarks(html) {
   try {
@@ -444,10 +518,12 @@ function parseHtmlBookmarks(html) {
       
       // SECURITY: Only accept valid HTTP/HTTPS URLs
       if (isValidUrl(url)) {
+        const addDateAttr = link.getAttribute('ADD_DATE');
+        const addDateMs = addDateAttr != null ? parseInt(addDateAttr) * 1000 : Date.now();
         bookmarks.push({
-          title: (link.textContent || link.innerText || '').trim() || '(No title)',
+          title: (link.textContent || '').trim() || '(No title)',
           url: url,
-          dateAdded: parseInt(link.getAttribute('ADD_DATE')) * 1000 || Date.now()
+          dateAdded: isNaN(addDateMs) ? Date.now() : addDateMs
         });
       }
     });
@@ -560,7 +636,10 @@ function escapeHtml(text) {
 }
 
 /**
- * Download file to user's computer
+ * Initiates a download of the provided content as a file in the user's browser.
+ * @param {string|Blob|Uint8Array} content - The file content to download; may be a string, Blob, or binary data.
+ * @param {string} filename - The suggested filename for the downloaded file.
+ * @param {string} mimeType - The MIME type to assign to the downloaded file (e.g., "application/json", "text/html").
  */
 function downloadFile(content, filename, mimeType) {
   const blob = new Blob([content], { type: mimeType });
@@ -571,13 +650,16 @@ function downloadFile(content, filename, mimeType) {
   link.download = filename;
   link.style.display = 'none';
   document.body.appendChild(link);
-  link.click();
   
-  // Cleanup
-  setTimeout(() => {
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, 100);
+  try {
+    link.click();
+  } finally {
+    // Cleanup — revokeObjectURL always runs even if click() throws or popup closes early
+    setTimeout(() => {
+      try { document.body.removeChild(link); } catch (e) { /* already removed */ }
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
 }
 
 /**

@@ -37,13 +37,19 @@ function log(...args) {
   }
 }
 
-// Utility: Error logging
+/**
+ * Log an error with a standardized BookmarkSync context label.
+ * @param {string} context - Short label identifying where the error occurred (e.g., function or task name).
+ * @param {*} error - The Error object or value to record; its message/stack will be included if present.
+ */
 function logError(context, error) {
   console.error(`[BookmarkSync] Error in ${context}:`, error);
 }
 
-// Get browser API (works on both Chrome and Firefox)
-const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+// MV3-compliant API namespace.
+// Both Chrome and Firefox MV3 expose the `chrome` namespace.
+// Firefox also exposes `browser` (Promise-based), but `chrome` works on both.
+const browserAPI = globalThis.browser ?? globalThis.chrome;
 
 /**
  * Initialize extension on install/update
@@ -58,7 +64,7 @@ browserAPI.runtime.onInstalled.addListener(async (details) => {
       await migrateStorageIfNeeded();
     }
     
-    setupAlarms();
+    await setupAlarms();
     
   } catch (error) {
     logError('onInstalled', error);
@@ -66,7 +72,12 @@ browserAPI.runtime.onInstalled.addListener(async (details) => {
 });
 
 /**
- * Initialize extension with default data
+ * Store initial extension metadata in local storage.
+ *
+ * Writes an object under CONFIG.METADATA_KEY containing:
+ * - `installedAt`: current timestamp in milliseconds,
+ * - `version`: the extension manifest version,
+ * - `totalSyncs`: initialized to 0.
  */
 async function initializeExtension() {
   log('Initializing extension...');
@@ -88,12 +99,15 @@ async function initializeExtension() {
 }
 
 /**
- * CRITICAL FIX: Migrate from session storage to local storage
+ * Migrate stored extension data from session storage to local storage when present.
+ *
+ * Copies the value stored under CONFIG.STORAGE_KEY from session storage into local storage
+ * and removes the key from session storage. If session storage is unavailable or the key
+ * is not present, the function does nothing.
  */
 async function migrateStorageIfNeeded() {
   try {
-    // Check if old session storage exists (for users upgrading)
-    // Note: Firefox doesn't support storage.session in MV3 yet
+    // Check if old session storage data exists (for users upgrading from v1)
     if (browserAPI.storage.session) {
       const sessionData = await browserAPI.storage.session.get([CONFIG.STORAGE_KEY]);
       
@@ -118,9 +132,12 @@ async function migrateStorageIfNeeded() {
 }
 
 /**
- * Set up periodic alarms
+ * Configure extension alarms for periodic maintenance, clearing any existing cleanup alarm first to avoid duplicate alarms.
  */
-function setupAlarms() {
+async function setupAlarms() {
+  // Clear any existing alarm before recreating to avoid duplicates on extension update
+  await browserAPI.alarms.clear(CONFIG.CLEANUP_ALARM);
+  
   // Cleanup alarm (check every 24 hours)
   browserAPI.alarms.create(CONFIG.CLEANUP_ALARM, {
     periodInMinutes: 1440 // 24 hours
@@ -138,6 +155,8 @@ browserAPI.alarms.onAlarm.addListener(async (alarm) => {
   try {
     if (alarm.name === CONFIG.CLEANUP_ALARM) {
       await performMaintenance();
+    } else if (alarm.name === DEBOUNCE_ALARM) {
+      await handleDebounceAlarm();
     }
   } catch (error) {
     logError(`alarm:${alarm.name}`, error);
@@ -198,25 +217,52 @@ browserAPI.bookmarks.onMoved.addListener((id, moveInfo) => {
   debounceNotifyPopup({ type: 'bookmark-changed', action: 'moved' });
 });
 
-// Debounce timer for popup notifications
-let notifyTimeout = null;
+// MV3 NOTE: setTimeout is unreliable in service workers — the SW can be killed before
+// the callback fires. We use a short-lived alarm instead, which survives SW termination.
+const DEBOUNCE_ALARM = 'notify_popup_debounce';
 
 /**
- * Debounce popup notifications
+ * Queue a popup notification message and schedule a short debounce timer.
+ *
+ * Stores the provided message in session storage for the debounce handler to read and creates a ~1 second one-shot alarm; if session storage is unavailable, sends the message immediately. Recreating the alarm resets the debounce timer.
+ * @param {any} message - Payload to deliver to the popup when the debounce timer fires.
  */
 function debounceNotifyPopup(message) {
-  if (notifyTimeout) {
-    clearTimeout(notifyTimeout);
-  }
-  
-  notifyTimeout = setTimeout(() => {
+  // Store the latest message so the alarm handler can read it
+  browserAPI.storage.session?.set({ pendingNotify: message }).catch(() => {
+    // storage.session not available (Firefox < 121) — fall back to direct notify
     notifyPopup(message);
-    notifyTimeout = null;
-  }, 1000);
+  });
+
+  // (Re)create a 1-second one-shot alarm — recreating resets the timer
+  browserAPI.alarms.create(DEBOUNCE_ALARM, { delayInMinutes: 1 / 60 }); // ~1 second
 }
 
 /**
- * Notify popup of events
+ * Processes any queued popup notification created by the debounce mechanism.
+ *
+ * If a pending notification exists in session storage, removes it and delivers it to the popup.
+ * If session storage is unavailable or an error occurs, the function silently does nothing.
+ */
+async function handleDebounceAlarm() {
+  try {
+    const result = await browserAPI.storage.session?.get('pendingNotify');
+    const message = result?.pendingNotify;
+    if (message) {
+      await browserAPI.storage.session.remove('pendingNotify');
+      notifyPopup(message);
+    }
+  } catch {
+    // storage.session unavailable — nothing to do
+  }
+}
+
+/**
+ * Send a message to the extension popup.
+ *
+ * Sends `message` via the extension runtime; errors from the send are ignored
+ * (for example when the popup is not open).
+ * @param {any} message - The message payload to deliver to the popup.
  */
 function notifyPopup(message) {
   browserAPI.runtime.sendMessage(message).catch(() => {
@@ -225,30 +271,33 @@ function notifyPopup(message) {
 }
 
 /**
- * Handle messages from popup
+ * Handle messages from popup — MV3 pattern: return a Promise directly
  */
 browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
   log('Message received:', message.type);
-  
-  // Handle async responses
-  (async () => {
-    try {
-      if (message.type === 'get-metadata') {
-        const result = await browserAPI.storage.local.get([CONFIG.METADATA_KEY]);
-        sendResponse({ success: true, metadata: result[CONFIG.METADATA_KEY] });
-      } else if (message.type === 'update-metadata') {
-        const result = await browserAPI.storage.local.get([CONFIG.METADATA_KEY]);
-        const metadata = { ...result[CONFIG.METADATA_KEY], ...message.data };
-        await browserAPI.storage.local.set({ [CONFIG.METADATA_KEY]: metadata });
-        sendResponse({ success: true });
-      }
-    } catch (error) {
+
+  const handle = async () => {
+    if (message.type === 'get-metadata') {
+      const result = await browserAPI.storage.local.get([CONFIG.METADATA_KEY]);
+      return { success: true, metadata: result[CONFIG.METADATA_KEY] };
+    } else if (message.type === 'update-metadata') {
+      const result = await browserAPI.storage.local.get([CONFIG.METADATA_KEY]);
+      const metadata = { ...result[CONFIG.METADATA_KEY], ...message.data };
+      await browserAPI.storage.local.set({ [CONFIG.METADATA_KEY]: metadata });
+      return { success: true };
+    }
+    return { success: false, error: 'Unknown message type' };
+  };
+
+  // MV3: return true AND call sendResponse to support both Chrome and Firefox
+  handle()
+    .then(sendResponse)
+    .catch(error => {
       logError('message handler', error);
       sendResponse({ success: false, error: error.message });
-    }
-  })();
-  
-  return true; // Keep message channel open for async response
+    });
+
+  return true; // Required to keep the channel open for the async response
 });
 
 /**
@@ -264,9 +313,10 @@ if (browserAPI.commands) {
   });
 }
 
-// Run maintenance on startup
+// Run maintenance and ensure alarms are alive on every browser start
 browserAPI.runtime.onStartup.addListener(async () => {
   log('Browser started');
+  await setupAlarms();
   await performMaintenance();
 });
 

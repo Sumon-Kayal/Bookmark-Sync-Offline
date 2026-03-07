@@ -286,15 +286,6 @@ input[type="file"] {
   color: var(--primary-color);
 }
 
-/* Active drag-over state */
-.file-input-wrapper.drag-over .file-label {
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
-  color: var(--primary-color);
-  border-style: solid;
-  transform: scale(1.02);
-}
-
 .file-input-wrapper:focus-within .file-label {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;

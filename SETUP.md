@@ -21,7 +21,7 @@ This guide will help you set up the development environment, understand the proj
 
 1. **Web Browser**
    - Chrome 88+ / Edge 88+ (recommended for development)
-   - Firefox 109+ (for cross-browser testing)
+   - Firefox 85+ (for cross-browser testing)
 
 2. **Code Editor** (Choose one)
    - VS Code (recommended) - [Download](https://code.visualstudio.com/)
@@ -229,18 +229,16 @@ Key sections to understand:
 {
   "manifest_version": 3,
   "name": "Bookmark Sync",
-  "version": "3.0.0",
+  "version": "1.0.0",
+  "description": "Sync bookmarks to internal storage",
   
   "permissions": [
-    "bookmarks",  // Read/write bookmarks
-    "storage",    // Use chrome.storage API
-    "alarms",     // Periodic maintenance & debounce
-    "tabs"        // Open manager in new tab
+    "bookmarks",    // Read/write bookmarks
+    "storage"       // Use chrome.storage API
   ],
   
   "background": {
-    "service_worker": "background.js",
-    "type": "module"    // MV3: enables ES module syntax
+    "service_worker": "background.js"
   },
   
   "action": {

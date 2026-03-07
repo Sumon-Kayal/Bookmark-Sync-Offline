@@ -21,7 +21,7 @@ This guide will help you set up the development environment, understand the proj
 
 1. **Web Browser**
    - Chrome 88+ / Edge 88+ (recommended for development)
-   - Firefox 85+ (for cross-browser testing)
+   - Firefox 109+ (for cross-browser testing)
 
 2. **Code Editor** (Choose one)
    - VS Code (recommended) - [Download](https://code.visualstudio.com/)
@@ -170,7 +170,7 @@ Bookmark-Sync/
 ├── popup.js              # Popup logic
 ├── manager.html          # Manager UI
 ├── styles.css            # Styles
-├── LICENSE               # MIT License
+├── LICENSE               # GPL-3.0 License
 ├── README.md             # Documentation
 └── .gitignore           # Git ignore file
 ```
@@ -229,16 +229,18 @@ Key sections to understand:
 {
   "manifest_version": 3,
   "name": "Bookmark Sync",
-  "version": "1.0.0",
-  "description": "Sync bookmarks to internal storage",
+  "version": "3.0.0",
   
   "permissions": [
-    "bookmarks",    // Read/write bookmarks
-    "storage"       // Use chrome.storage API
+    "bookmarks",  // Read/write bookmarks
+    "storage",    // Use chrome.storage API
+    "alarms",     // Periodic maintenance & debounce
+    "tabs"        // Open manager in new tab
   ],
   
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"    // MV3: enables ES module syntax
   },
   
   "action": {
@@ -386,7 +388,7 @@ Since this is a simple extension, no build step is currently needed. To prepare 
 2. **Update version**
    ```json
    // In manifest.json
-   "version": "1.1.0"
+   "version": "3.0.0"
    ```
 
 3. **Test thoroughly**
@@ -397,7 +399,7 @@ Since this is a simple extension, no build step is currently needed. To prepare 
 4. **Create release package**
    ```bash
    # Create a zip file (exclude unnecessary files)
-   zip -r bookmark-sync-v1.1.0.zip . \
+   zip -r bookmark-sync-v3.0.0.zip . \
      -x "*.git*" \
      -x "node_modules/*" \
      -x "tests/*" \

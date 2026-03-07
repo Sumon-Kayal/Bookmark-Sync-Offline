@@ -13,8 +13,10 @@
 const STORAGE_KEY = 'bookmarks_data';
 const METADATA_KEY = 'sync_metadata';
 
-// Get browser API (works on both Chrome and Firefox)
-const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+// MV3-compliant API namespace.
+// Both Chrome and Firefox MV3 expose the `chrome` namespace.
+// Firefox also exposes `browser` (Promise-based), but `chrome` works on both.
+const browserAPI = globalThis.browser ?? globalThis.chrome;
 
 // UI Elements
 const countEl = document.getElementById('count');
@@ -63,13 +65,45 @@ function setupEventListeners() {
   // Import button opens manager in new tab
   if (importBtn) {
     importBtn.addEventListener('click', () => {
-      browserAPI.tabs.create({ url: 'manager.html' });
+      browserAPI.tabs.create({ url: browserAPI.runtime.getURL('manager.html') });
     });
   }
   
   // File input for manager page
   if (fileInput) {
     fileInput.addEventListener('change', handleImportFile);
+  }
+  
+  // Drag-and-drop for manager page
+  const dropZone = document.getElementById('dropZone');
+  if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('drag-over');
+    });
+    
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only remove highlight when the cursor truly leaves the drop zone,
+      // not when it moves over a child element inside it
+      if (!dropZone.contains(e.relatedTarget)) {
+        dropZone.classList.remove('drag-over');
+      }
+    });
+    
+    dropZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+      
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      
+      // Reuse the same import handler by simulating a file event
+      await handleImportFileData(file);
+    });
   }
 }
 
@@ -169,21 +203,30 @@ async function updateCount() {
   }
 }
 
+// Timer handle for auto-hiding status messages
+let statusTimeout = null;
+
 /**
  * Show status message
  */
 function showStatus(message, type = 'info') {
   if (!statusEl) {
-    console.log('[Status]', message);
     return;
+  }
+  
+  // Clear any existing hide-timer so it doesn't dismiss the new message early
+  if (statusTimeout) {
+    clearTimeout(statusTimeout);
+    statusTimeout = null;
   }
   
   statusEl.textContent = message;
   statusEl.className = `status show ${type}`;
   
   // Auto-hide after 4 seconds
-  setTimeout(() => {
+  statusTimeout = setTimeout(() => {
     statusEl.classList.remove('show');
+    statusTimeout = null;
   }, 4000);
 }
 
@@ -209,7 +252,8 @@ async function handlePull() {
           bookmarks.push({
             title: node.title || '(No title)',
             url: node.url,
-            dateAdded: node.dateAdded || Date.now()
+            // Use != null so dateAdded: 0 is preserved correctly
+            dateAdded: node.dateAdded != null ? node.dateAdded : Date.now()
           });
         } else {
           console.warn('[Popup] Skipping invalid URL:', node.url);
@@ -223,11 +267,14 @@ async function handlePull() {
     
     walkTree(tree[0]);
     
-    // Save to storage
-    await saveStored(bookmarks);
+    // Save to storage — returns deduped array
+    const saved = await saveStored(bookmarks);
     await updateCount();
     
-    showStatus(`✓ Successfully pulled ${bookmarks.length} bookmarks`, 'success');
+    const skippedDups = bookmarks.length - saved.length;
+    let msg = `✓ Successfully pulled ${saved.length} bookmarks`;
+    if (skippedDups > 0) msg += ` (${skippedDups} duplicate${skippedDups !== 1 ? 's' : ''} removed)`;
+    showStatus(msg, 'success');
     
   } catch (error) {
     console.error('[Popup] Error pulling bookmarks:', error);
@@ -251,6 +298,7 @@ async function handlePush() {
     
     if (!staged.length) {
       showStatus('No bookmarks to push', 'error');
+      setOperationState(false);
       return;
     }
     
@@ -270,6 +318,7 @@ async function handlePush() {
     
     if (!toAdd.length) {
       showStatus('✓ All bookmarks already exist in browser', 'success');
+      setOperationState(false);
       return;
     }
     
@@ -309,50 +358,39 @@ async function handlePush() {
 
 /**
  * IMPROVED: Find or create bookmark folder (prevents duplicates)
+ * Searches only the direct children of the bookmarks bar to avoid
+ * accidentally matching a same-named folder elsewhere in the tree.
  */
 async function findOrCreateFolder(title) {
   try {
     const tree = await browserAPI.bookmarks.getTree();
-    let foundFolder = null;
-    
-    function findFolder(node) {
-      if (!node.url && node.title === title) {
-        foundFolder = node;
-        return true;
-      }
-      if (node.children) {
-        return node.children.some(findFolder);
-      }
-      return false;
-    }
-    
-    findFolder(tree[0]);
-    
-    if (foundFolder) {
-      console.log('[Popup] Using existing folder:', title);
-      return foundFolder;
-    }
-    
-    // Create new folder
-    // Try to get bookmarks bar ID (different on Chrome vs Firefox)
-    let parentId = '1'; // Default for Chrome
-    
-    // For Firefox, we need to find the toolbar folder
+
+    // Find a safe parent bar: Chrome id "1", Firefox "toolbar_____", or title match
+    let parentBar = null;
     if (tree[0].children) {
-      const toolbar = tree[0].children.find(n => n.title === 'toolbar' || n.id === 'toolbar_____');
-      if (toolbar) {
-        parentId = toolbar.id;
-      }
+      parentBar = tree[0].children.find(n =>
+        n.id === '1' || n.id === 'toolbar_____' ||
+        /bookmarks\.bar|toolbar/i.test(n.title)
+      );
     }
-    
-    console.log('[Popup] Creating new folder:', title);
+    if (!parentBar) parentBar = tree[0]; // fallback to root
+
+    // Only search direct children of the bar — avoids wrong deep matches
+    const existingFolder = (parentBar.children || []).find(
+      n => !n.url && n.title === title
+    );
+
+    if (existingFolder) {
+      return existingFolder;
+    }
+
     const folder = await browserAPI.bookmarks.create({
-      parentId: parentId,
+      parentId: parentBar.id,
       title: title
     });
-    
+
     return folder;
-    
+
   } catch (error) {
     console.error('[Popup] Error finding/creating folder:', error);
     throw error;
@@ -360,11 +398,18 @@ async function findOrCreateFolder(title) {
 }
 
 /**
- * Handle file import with validation
+ * Handle file import via <input type="file">
  */
 async function handleImportFile(event) {
   const file = event.target.files[0];
   if (!file) return;
+  await handleImportFileData(file);
+}
+
+/**
+ * Core import logic — shared by file input and drag-and-drop
+ */
+async function handleImportFileData(file) {
   
   showStatus('Importing file...', 'info');
   
@@ -372,14 +417,15 @@ async function handleImportFile(event) {
     const content = await readFileAsText(file);
     let bookmarks;
     
-    if (file.name.endsWith('.json')) {
+    const nameLower = file.name.toLowerCase();
+    if (nameLower.endsWith('.json')) {
       bookmarks = JSON.parse(content);
       
       // Validate JSON structure
       if (!Array.isArray(bookmarks)) {
         throw new Error('Invalid JSON format: expected array of bookmarks');
       }
-    } else if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+    } else if (nameLower.endsWith('.html') || nameLower.endsWith('.htm')) {
       bookmarks = parseHtmlBookmarks(content);
     } else {
       throw new Error('Unsupported file type. Please use .json or .html files');
@@ -444,10 +490,12 @@ function parseHtmlBookmarks(html) {
       
       // SECURITY: Only accept valid HTTP/HTTPS URLs
       if (isValidUrl(url)) {
+        const addDateAttr = link.getAttribute('ADD_DATE');
+        const addDateMs = addDateAttr != null ? parseInt(addDateAttr) * 1000 : Date.now();
         bookmarks.push({
-          title: (link.textContent || link.innerText || '').trim() || '(No title)',
+          title: (link.textContent || '').trim() || '(No title)',
           url: url,
-          dateAdded: parseInt(link.getAttribute('ADD_DATE')) * 1000 || Date.now()
+          dateAdded: isNaN(addDateMs) ? Date.now() : addDateMs
         });
       }
     });
@@ -571,13 +619,16 @@ function downloadFile(content, filename, mimeType) {
   link.download = filename;
   link.style.display = 'none';
   document.body.appendChild(link);
-  link.click();
   
-  // Cleanup
-  setTimeout(() => {
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, 100);
+  try {
+    link.click();
+  } finally {
+    // Cleanup — revokeObjectURL always runs even if click() throws or popup closes early
+    setTimeout(() => {
+      try { document.body.removeChild(link); } catch (e) { /* already removed */ }
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
 }
 
 /**

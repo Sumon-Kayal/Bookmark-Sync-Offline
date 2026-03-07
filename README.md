@@ -2,8 +2,8 @@
 
 A lightweight browser extension that synchronizes your bookmarks to internal storage, providing a seamless backup and management solution for your favorite links.
 
-![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)
-![Version](https://img.shields.io/badge/version-3.0.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)
 
 ## ✨ Features
@@ -68,7 +68,7 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
 
 ### Prerequisites
 
-- Modern web browser (Chrome 88+, Firefox 109+, or Edge 88+)
+- Modern web browser (Chrome 88+, Firefox 85+, or Edge 88+)
 - Basic knowledge of JavaScript and browser extensions
 - Text editor or IDE (VS Code recommended)
 
@@ -83,7 +83,7 @@ Bookmark-Sync/
 ├── manager.html          # Bookmark manager interface
 ├── styles.css            # Shared styles
 ├── README.md             # This file
-├── LICENSE               # GPL-3.0 License
+├── LICENSE               # MIT License
 └── .gitignore           # Git ignore rules
 ```
 
@@ -137,7 +137,7 @@ Bookmark-Sync/
 |---------|---------|--------|
 | Chrome  | 88+     | ✅ Supported |
 | Edge    | 88+     | ✅ Supported |
-| Firefox | 109+    | ✅ Supported |
+| Firefox | 85+     | ✅ Supported |
 | Safari  | -       | ❌ Not tested |
 | Opera   | 74+     | ✅ Should work |
 
@@ -148,16 +148,14 @@ Bookmark-Sync/
 ```javascript
 // Bookmarks are stored in chrome.storage.local
 {
-  "bookmarks_data": {
-    "data": [
-      {
-        "title": "Example Site",
-        "url": "https://example.com",
-        "dateAdded": 1234567890000
-      }
-    ],
-    "savedAt": 1234567890000,
-    "count": 1
+  "bookmarks": {
+    "id_1": {
+      "title": "Example Site",
+      "url": "https://example.com",
+      "parentId": "folder_id",
+      "dateAdded": 1234567890000
+    },
+    // ... more bookmarks
   }
 }
 ```
@@ -165,17 +163,14 @@ Bookmark-Sync/
 ### Key Functions
 
 **background.js**
-- `initializeExtension()` — Sets default metadata on first install
-- `setupAlarms()` — Creates the 24h maintenance alarm (clears first to avoid duplicates)
-- `performMaintenance()` — Runs periodic storage housekeeping
-- `debounceNotifyPopup(message)` — Alarm-based debounce for bookmark change notifications
+- `syncBookmarks()` - Performs full bookmark synchronization
+- `handleBookmarkChange()` - Processes bookmark creation/updates
+- `handleBookmarkRemoval()` - Processes bookmark deletions
 
 **popup.js**
-- `handlePull()` — Reads the full bookmark tree and saves to local storage
-- `handlePush()` — Pushes staged bookmarks into the browser's bookmark bar
-- `handleExportJson()` / `handleExportHtml()` — Exports stored bookmarks to file
-- `handleImportFileData(file)` — Imports bookmarks from a JSON or HTML file
-- `findOrCreateFolder(title)` — Finds or creates a folder on the bookmarks bar
+- `displayStatus()` - Shows sync status in popup
+- `triggerSync()` - Manually triggers synchronization
+- `openManager()` - Opens bookmark manager interface
 
 ## 🤝 Contributing
 
@@ -210,10 +205,14 @@ Contributions are welcome! Here's how you can help:
 
 ## 📋 Roadmap
 
+## 📋 Roadmap
+
 - [ ] Search functionality in manager
 - [ ] Cloud sync integration
 - [ ] Tag system for bookmarks
 - [ ] Keyboard shortcuts
+- [ ] Dark mode support
+- [ ] Bookmark statistics and analytics
 - [ ] Dark mode support
 - [ ] Bookmark statistics and analytics
 - [ ] Duplicate detection
@@ -221,7 +220,7 @@ Contributions are welcome! Here's how you can help:
 
 ## 📄 License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👤 Author
 

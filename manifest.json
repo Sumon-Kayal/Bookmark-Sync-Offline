@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Bookmark Sync",
-  "version": "3.0.0",
+  "version": "2.0.0",
   "description": "Sync, import, export and manage your browser bookmarks with automatic backup",
   "author": "Sumon Kayal",
   
   "icons": {
     "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
@@ -15,13 +14,11 @@
   "permissions": [
     "bookmarks",
     "storage",
-    "alarms",
-    "tabs"
+    "alarms"
   ],
   
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   
   "action": {
@@ -42,23 +39,9 @@
         "mac": "Command+Shift+B"
       },
       "description": "Open Bookmark Sync"
-    },
-    "pull_bookmarks": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+P",
-        "mac": "Command+Shift+P"
-      },
-      "description": "Pull bookmarks from browser"
     }
   },
   
-  "web_accessible_resources": [
-    {
-      "resources": ["manager.html", "styles.css"],
-      "matches": ["<all_urls>"]
-    }
-  ],
-
   "browser_specific_settings": {
     "gecko": {
       "id": "bookmark-sync@sumonkayal.dev",

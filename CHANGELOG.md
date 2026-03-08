@@ -4,7 +4,7 @@ All notable changes to Bookmark Sync Offline are documented here.
 
 ---
 
-## [3.0.0] - 2026-03-08
+## [3.0.0] - 2026-03-07 (Current)
 
 ### Fixed
 - Wrap file import in `try-finally` for proper cleanup (`8ca470c`)
@@ -19,19 +19,18 @@ All notable changes to Bookmark Sync Offline are documented here.
 
 ---
 
-## [2.1.0] - Earlier (PR #19–#25 range)
+## [2.1.0] - 2026-03-07
 
 ### Changed
 - Multiple iterative file updates via PRs #20–#25
 - Reverted a bad upload from PR #15 via PR #19 (`b76168e`)
 
 ### Fixed
-- Removed `icons/Sample.txt` placeholder file (`6cdb803`)
-- Added then cleaned up `Sample.txt` in icons folder (`5df1a66`)
+- Removed `icons/Sample.txt` placeholder — added in `5df1a66`, then deleted in `6cdb803`
 
 ---
 
-## [2.0.0] - Earlier (PR #1–#14 2026-01-16)
+## [2.0.0] - 2026-01-22
 
 ### Added
 - CodeRabbit auto-generated docstrings pass (`61de498`)
@@ -50,7 +49,7 @@ All notable changes to Bookmark Sync Offline are documented here.
 
 ---
 
-## [1.0.0] - Initial release
+## [1.0.0] - 2026-01-16
 
 ### Added
 - Initial commit — base extension scaffolding (`8fe9581`)

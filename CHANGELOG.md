@@ -31,7 +31,7 @@ All notable changes to Bookmark Sync Offline are documented here.
 
 ---
 
-## [2.0.0] - Earlier (PR #1–#14 range)
+## [2.0.0] - Earlier (PR #1–#14 2026-01-16)
 
 ### Added
 - CodeRabbit auto-generated docstrings pass (`61de498`)

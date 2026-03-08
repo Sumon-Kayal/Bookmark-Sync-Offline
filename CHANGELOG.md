@@ -4,7 +4,7 @@ All notable changes to Bookmark Sync Offline are documented here.
 
 ---
 
-## [3.0.0] - 2026-03 (Current)
+## [3.0.0] - 2026-03-08
 
 ### Fixed
 - Wrap file import in `try-finally` for proper cleanup (`8ca470c`)

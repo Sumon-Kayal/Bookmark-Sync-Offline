@@ -294,7 +294,7 @@ If you encounter any issues or have questions:
 - `DEPLOYMENT_COMPLETE.md` updated (`f922fbd`)
 
 **Removed**
-- Deleted original `LICENSE` (later re-added as MIT) (`640d856`)
+- Deleted original `LICENSE` (later re-added as GPL-3.0) (`640d856`)
 - Deleted original `.gitignore` (`0843f3e`)
 
 ---

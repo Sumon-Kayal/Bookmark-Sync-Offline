@@ -13,7 +13,6 @@ A lightweight browser extension for transferring bookmarks between Chromium-base
 > - 🦊 **Firefox for Android — including its forks that support browser extensions**
 >
 > 💡 **Why Firefox for Android?** Firefox for Android and its forks do not have a built-in bookmark export feature. This extension fills that gap — letting you export your bookmarks as JSON or HTML directly from the browser.
->
 
 ---
 
@@ -73,10 +72,10 @@ A lightweight browser extension for transferring bookmarks between Chromium-base
 
 ### Features Overview
 
-- **Popup Interface**: Quick access to sync status and manager
-- **Bookmark Manager**: Full-featured interface for browsing synced bookmarks
-- **Background Sync**: Automatic synchronization without user interaction
-- **Storage Statistics**: View how many bookmarks are synced
+- **Popup Interface**: Quick access to pull, push, export, and import bookmarks
+- **Import File Page**: Full-page interface for importing bookmarks from JSON or HTML files
+- **Change Detection**: Background listener that detects bookmark changes and notifies the popup
+- **Storage Statistics**: View how many bookmarks are staged
 
 ## 🛠️ Development Setup
 
@@ -94,7 +93,7 @@ Bookmark-Sync-Offline/
 ├── background.js          # Background service worker
 ├── popup.html            # Extension popup interface
 ├── popup.js              # Popup functionality
-├── manager.html          # Bookmark manager interface
+├── manager.html          # Bookmark import page
 ├── styles.css            # Shared styles
 ├── README.md             # This file
 ├── CHANGELOG.md          # Version history
@@ -108,7 +107,7 @@ Bookmark-Sync-Offline/
 - **manifest.json** - Defines extension properties, permissions, and scripts
 - **background.js** - Handles bookmark events and synchronization logic
 - **popup.js** - Controls the popup interface and user interactions
-- **manager.html** - Full-page bookmark management interface
+- **manager.html** - Full-page bookmark import interface (file picker and drag-and-drop)
 
 ### Development Workflow
 
@@ -157,7 +156,7 @@ Bookmark-Sync-Offline/
 | Firefox | 109+    | ✅ Supported |
 | Cromite | 142+    | ✅ Supported |
 | Safari  | -       | ❌ Not tested |
-| Opera   | 74+     | ✅ Should work |
+| Opera   | 74+     | ⚠️ Desktop only (no extension support on Android) |
 
 ## 📝 API Reference
 

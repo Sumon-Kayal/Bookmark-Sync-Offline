@@ -14,7 +14,6 @@ A lightweight browser extension for transferring bookmarks between Chromium-base
 >
 > 💡 **Why Firefox for Android?** Firefox for Android and its forks do not have a built-in bookmark export feature. This extension fills that gap — letting you export your bookmarks as JSON or HTML directly from the browser.
 >
-> 📱 **Intended for Android use only.**
 
 ---
 

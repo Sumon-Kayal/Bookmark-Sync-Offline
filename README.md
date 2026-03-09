@@ -1,10 +1,21 @@
 # 🔖 Bookmark Sync Offline 
 
-A lightweight browser extension that synchronizes your bookmarks to internal storage, providing a seamless backup and management solution for your favorite links.
+A lightweight browser extension for transferring bookmarks between Chromium-based browsers and Firefox on Android — export from one, import into another, with local storage as the bridge.
 
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)
 ![Version](https://img.shields.io/badge/version-3.0.0-green.svg)
 ![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)
+
+## 🎯 Purpose
+
+> **This extension is designed to transfer bookmarks between:**
+> - 🟠 **Chromium-based Android browsers that support extensions** (e.g. Cromite, Kiwi)
+> - 🦊 **Firefox for Android — including its forks that support browser extensions**
+>
+> 💡 **Why Firefox for Android?** Firefox for Android and its forks do not have a built-in bookmark export feature. This extension fills that gap — letting you export your bookmarks as JSON or HTML directly from the browser.
+>
+
+---
 
 ## 📱 Screenshot
 
@@ -12,11 +23,11 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
 
 ## ✨ Features
 
-- 📥 **Automatic Sync** - Seamlessly sync bookmarks from your browser to internal storage
-- 🔄 **Real-time Updates** - Automatically detects bookmark changes and updates storage
-- 📊 **Bookmark Manager** - Clean, intuitive interface to view and manage your bookmarks
+- 🔄 **Cross-Browser Transfer** - Move bookmarks between Chromium browsers and Firefox (including Android forks)
+- 📡 **Change Detection** - Background listener detects bookmark changes and notifies the popup in real time
+- 📊 **Staging Area** - Review and manage bookmarks before pushing them to the browser
 - 🎯 **Lightweight** - Minimal resource usage with fast performance
-- 🔒 **Privacy Focused** - All data stored locally in your browser
+- 🔒 **Privacy Focused** - All data stored locally, no server or account required
 - 🎨 **Modern UI** - Clean and user-friendly interface
 
 ## 🚀 Installation
@@ -50,7 +61,7 @@ A lightweight browser extension that synchronizes your bookmarks to internal sto
    - The count display will update to show how many bookmarks were staged
 
 2. **Import Bookmarks**
-   - Click **"Open Manager"** to open the bookmark manager, then use the file picker to load bookmarks from a JSON or HTML file
+   - Click **"Import File"** to open the import page, then use the file picker to load bookmarks from a JSON or HTML file
    - Once imported, click **"Push to Browser"** to add them to your browser
 
 3. **Automatic Sync**
@@ -86,6 +97,8 @@ Bookmark-Sync-Offline/
 ├── manager.html          # Bookmark manager interface
 ├── styles.css            # Shared styles
 ├── README.md             # This file
+├── CHANGELOG.md          # Version history
+├── SETUP.md              # Setup and icon documentation
 ├── LICENSE               # GPL-3.0 License
 └── .gitignore           # Git ignore rules
 ```
@@ -127,11 +140,12 @@ Bookmark-Sync-Offline/
 - [ ] Extension installs without errors
 - [ ] Popup opens and displays correctly
 - [ ] Initial sync saves all bookmarks
-- [ ] New bookmarks are automatically synced
-- [ ] Deleted bookmarks are removed from storage
-- [ ] Bookmark manager displays all items correctly
-- [ ] Folder structure is preserved
-- [ ] Search/filter works (if implemented)
+- [ ] New bookmarks are automatically detected
+- [ ] Bookmark manager opens correctly via Import File button
+- [ ] JSON and HTML import works correctly
+- [ ] Export JSON and Export HTML produce valid files
+- [ ] Push to Browser adds bookmarks without duplicates
+- [ ] Clear Staging Area wipes only extension storage
 - [ ] Extension icon displays properly
 
 ### Browser Compatibility
@@ -141,6 +155,7 @@ Bookmark-Sync-Offline/
 | Chrome  | 88+     | ✅ Supported |
 | Edge    | 88+     | ✅ Supported |
 | Firefox | 109+    | ✅ Supported |
+| Cromite | 142+    | ✅ Supported |
 | Safari  | -       | ❌ Not tested |
 | Opera   | 74+     | ✅ Should work |
 
@@ -219,7 +234,7 @@ Contributions are welcome! Here's how you can help:
 - [ ] Keyboard shortcuts
 - [ ] Dark mode support
 - [ ] Bookmark statistics and analytics
-- [ ] Duplicate detection
+- [x] Duplicate detection
 - [ ] Backup scheduling
 
 ## 📄 License

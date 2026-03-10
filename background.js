@@ -114,7 +114,7 @@ async function migrateStorageIfNeeded() {
         log('Migration complete');
       }
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore errors - session storage might not be supported
     log('Session storage not available or migration not needed');
   }
@@ -186,22 +186,22 @@ async function performMaintenance() {
 /**
  * Listen to bookmark changes for auto-sync
  */
-browserAPI.bookmarks.onCreated.addListener((id, bookmark) => {
+browserAPI.bookmarks.onCreated.addListener((_id, bookmark) => {
   log('Bookmark created:', bookmark.title);
   debounceNotifyPopup({ type: 'bookmark-changed', action: 'created' });
 });
 
-browserAPI.bookmarks.onRemoved.addListener((id, removeInfo) => {
+browserAPI.bookmarks.onRemoved.addListener((id, _removeInfo) => {
   log('Bookmark removed:', id);
   debounceNotifyPopup({ type: 'bookmark-changed', action: 'removed' });
 });
 
-browserAPI.bookmarks.onChanged.addListener((id, changeInfo) => {
+browserAPI.bookmarks.onChanged.addListener((id, _changeInfo) => {
   log('Bookmark changed:', id);
   debounceNotifyPopup({ type: 'bookmark-changed', action: 'changed' });
 });
 
-browserAPI.bookmarks.onMoved.addListener((id, moveInfo) => {
+browserAPI.bookmarks.onMoved.addListener((id, _moveInfo) => {
   log('Bookmark moved:', id);
   debounceNotifyPopup({ type: 'bookmark-changed', action: 'moved' });
 });
@@ -251,7 +251,7 @@ function notifyPopup(message) {
 /**
  * Handle messages from popup — MV3 pattern: return a Promise directly
  */
-browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   log('Message received:', message.type);
 
   const handle = async () => {
@@ -282,7 +282,7 @@ browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
  * Handle keyboard commands
  */
 if (browserAPI.commands) {
-  browserAPI.commands.onCommand.addListener(async (command) => {
+  browserAPI.commands.onCommand.addListener((command) => {
     log('Command triggered:', command);
     
     // Commands are primarily handled by popup

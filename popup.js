@@ -185,7 +185,7 @@ async function saveStored(data) {
         type: 'update-metadata',
         data: { lastUpdate: Date.now() }
       });
-    } catch (e) {
+    } catch (_e) {
       // Background might not be ready, ignore
     }
     
@@ -253,7 +253,7 @@ async function handlePull() {
     
     const bookmarks = [];
     
-    function walkTree(node) {
+    const walkTree = (node) => {
       if (node.url) {
         // SECURITY FIX: Validate URL before adding
         if (isValidUrl(node.url)) {
@@ -271,7 +271,7 @@ async function handlePull() {
       if (node.children) {
         node.children.forEach(walkTree);
       }
-    }
+    };
     
     walkTree(tree[0]);
     
@@ -314,10 +314,10 @@ async function handlePush() {
     const tree = await browserAPI.bookmarks.getTree();
     const existingUrls = new Set();
     
-    function collectUrls(node) {
+    const collectUrls = (node) => {
       if (node.url) existingUrls.add(node.url);
       if (node.children) node.children.forEach(collectUrls);
-    }
+    };
     
     collectUrls(tree[0]);
     
@@ -641,7 +641,7 @@ function downloadFile(content, filename, mimeType) {
   } finally {
     // Cleanup — revokeObjectURL always runs even if click() throws or popup closes early
     setTimeout(() => {
-      try { document.body.removeChild(link); } catch (e) { /* already removed */ }
+      try { document.body.removeChild(link); } catch (_e) { /* already removed */ }
       URL.revokeObjectURL(url);
     }, 100);
   }
